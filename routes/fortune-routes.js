@@ -1,11 +1,12 @@
 import express from 'express';
-import { getFortuneCookie } from '../controllers/fortune-controllers.js';
+import * as fortuneController from '../controllers/fortune-controllers.js';
 
 const fortuneRouter = express.Router();
 
 fortuneRouter
-  .get('/cookie', getFortuneCookie);
-
-
-
+  .get('/cookie', fortuneController.getFortuneCookie)
+  .post('/bazi', fortuneController.getBazi)
+  .post('/generate', fortuneController.generateFortune);
+  
+  
 export default fortuneRouter;
