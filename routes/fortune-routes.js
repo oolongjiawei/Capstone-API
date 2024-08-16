@@ -5,7 +5,8 @@ const fortuneRouter = express.Router();
 
 fortuneRouter
   .post('/cookie', fortuneController.outputFortuneCookie)
-  .get('/user/:userId/cookies', fortuneController.getAllFortuneCookies)
+  .get('/cookies', fortuneController.getAllFortuneCookies)
+  .get('/user/:userId/cookies', fortuneController.getUserFortuneCookies)
   .post('/bazi', fortuneController.generateBazi) 
   .get('/user/:userId/bazi', fortuneController.getUserBazi);
   
