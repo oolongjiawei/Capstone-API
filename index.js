@@ -11,12 +11,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (_req, res) => {
+app.get("/api", (_req, res) => {
     res.send("Welcome to Fortune House API");
 });
 
-app.use('/auth', authRoutes);
-app.use('/fortune', fortuneRouter);
+app.use('/api/auth', authRoutes);
+app.use('/api/fortune', fortuneRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

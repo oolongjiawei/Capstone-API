@@ -14,6 +14,6 @@ authRouter
 // User login route:
 authRouter
   .route("/login")
-  .post(authController.loginUser);
+  .get(authController.loginUser);
 
 export default authRouter;

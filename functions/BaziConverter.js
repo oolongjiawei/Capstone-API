@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const $lucky_time = "Lucky";
 const $lucky_time_chinese = "吉";
 
+const sixtyJiaziData = loadRawData(__dirname + "/../data/sixty_jiazi.json");
 const $dizi = loadRawData(__dirname + "/../data/dizi.json");
 const $tiangang = loadRawData(__dirname + "/../data/tiangan.json");
 const $dates_mapping = loadRawData(__dirname + "/../data/dates_mapping.json");
@@ -165,12 +166,20 @@ export default class BaziConverter {
     if (earthHour !== "-") {
       baziChineseTime = $tiangang[hourMapping] + $dizi[earthHour];
     }
-    return {
-      year: baziChineseYear,
-      month: baziChineseMonth,
-      day: baziChineseDay,
-      time: baziChineseTime,
-    };
+    
+ // 查找匹配的甲子数据
+ const jiaziName = `${$tiangang[this.convertToTianGangNumber(baziDate.HYear)]}${$dizi[this.convertToDiziNumber(baziDate.EYear)]}`;
+ const matchedJiazi = sixtyJiaziData.find(jiazi => jiazi.name === jiaziName);
+
+ return {
+   year: baziChineseYear,
+   month: baziChineseMonth,
+   day: baziChineseDay,
+   time: baziChineseTime,
+   element: matchedJiazi ? matchedJiazi.element : null,
+   element_color: matchedJiazi ? matchedJiazi.element_color : null,
+   brief: matchedJiazi ? matchedJiazi.brief : null,
+ };
   }
 
   /**

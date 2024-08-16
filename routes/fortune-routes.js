@@ -4,9 +4,10 @@ import * as fortuneController from '../controllers/fortune-controllers.js';
 const fortuneRouter = express.Router();
 
 fortuneRouter
-  .get('/cookie', fortuneController.getFortuneCookie)
-  .post('/bazi', fortuneController.getBazi)
-  .post('/generate', fortuneController.generateFortune);
+  .post('/cookie', fortuneController.outputFortuneCookie)
+  .get('/user/:userId/cookies', fortuneController.getAllFortuneCookies)
+  .post('/bazi', fortuneController.generateBazi) 
+  .get('/user/:userId/bazi', fortuneController.getUserBazi);
   
-  
+
 export default fortuneRouter;
