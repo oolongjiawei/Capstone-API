@@ -57,52 +57,121 @@ const getAllFortuneCookies = async (req, res) => {
 };
 
 
+// const generateBazi = async (req, res) => {
+//   const { userId, birthYear, birthMonth, birthDay, birthTime } = req.body;
+
+//   // Basic input validation
+//   if (!userId || !birthYear || !birthMonth || !birthDay || birthTime === undefined) {
+//     return res.status(400).json({ message: 'Invalid input parameters.' });
+//   }
+
+//   try {
+//     // Initialize BaziConverter and generate Bazi data
+//     const baziConverter = new BaziConverter(birthYear, birthMonth, birthDay, birthTime);
+//     const baziResult = baziConverter.getBaziJson();
+
+//     const baziData = {
+//       user_id: userId,
+//       birth_year: birthYear,
+//       birth_month: birthMonth,
+//       birth_day: birthDay,
+//       birth_time: birthTime,
+//       bazi_year: baziResult.year,
+//       bazi_month: baziResult.month,
+//       bazi_day: baziResult.day,
+//       bazi_time: baziResult.time,
+//       symbol_year: baziResult.symbol_year,  
+//       symbol_month: baziResult.symbol_month,
+//       symbol_day: baziResult.symbol_day,
+//       symbol_time: baziResult.symbol_time,
+//       element: baziResult.element,
+//       element_color: baziResult.element_color,
+//       brief: baziResult.brief,
+//     };
+
+//     // Check if Bazi data already exists for the user
+//     const existingBaziData = await db('users_bazi_data').where({ user_id: userId }).first();
+
+//     if (existingBaziData) {
+//       // Update existing record
+//       await db('users_bazi_data').where({ user_id: userId }).update(baziData);
+//       return res.status(200).json({ message: 'Bazi data updated.', bazi: baziData });
+//     } else {
+//       // Insert new record
+//       const [baziDataId] = await db('users_bazi_data').insert(baziData);
+//       const newBaziData = await db('users_bazi_data').where({ id: baziDataId }).first();
+//       return res.status(201).json({ message: 'Bazi data saved.', bazi: newBaziData });
+//     }
+    
+//   } catch (error) {
+//     console.error('Error generating Bazi:', error); // Log the error
+//     res.status(500).json({ message: 'Unable to generate and store Bazi data.', error: error.message });
+//   }
+// };
 const generateBazi = async (req, res) => {
+  // const { userId, birthYear, birthMonth, birthDay, birthTime, save } = req.body;
+  let { userId, birthYear, birthMonth, birthDay, birthTime, save } = req.body;
+  
 
-  const { userId, birthYear, birthMonth, birthDay, birthTime } = req.body;
+  birthYear = parseInt(birthYear);
+  birthMonth = parseInt(birthMonth);
+  birthDay = parseInt(birthDay);
+  birthTime = parseInt(birthTime);
 
-  // 添加简单的输入验证
+  console.log('Received Bazi data:', req.body); 
+  console.log('Received Data:', { userId, birthYear, birthMonth, birthDay, birthTime, save });
+
   if (!userId || !birthYear || !birthMonth || !birthDay || birthTime === undefined) {
     return res.status(400).json({ message: 'Invalid input parameters.' });
   }
 
-  // 使用 BaziConverter 生成八字数据
-  const baziConverter = new BaziConverter(birthYear, birthMonth, birthDay, birthTime);
-  const baziResult = baziConverter.getBaziJson();
-
-  const baziData = {
-    user_id: userId,
-    birth_year: birthYear,
-    birth_month: birthMonth,
-    birth_day: birthDay,
-    birth_time: birthTime,
-    bazi_year: baziResult.year,
-    bazi_month: baziResult.month,
-    bazi_day: baziResult.day,
-    bazi_time: baziResult.time,
-    element: baziResult.element,
-    element_color: baziResult.element_color,
-    brief: baziResult.brief,
-  };
-
   try {
-    // 检查该用户是否已有八字记录
-    const existingBaziData = await db('users_bazi_data').where({ user_id: userId }).first();
+    const baziConverter = new BaziConverter(birthYear, birthMonth, birthDay, birthTime);
+    console.log('BaziConverter initialized:', baziConverter);
 
-    if (existingBaziData) {
-      // 如果已有记录，可以选择更新或删除再插入
-      await db('users_bazi_data').where({ user_id: userId }).update(baziData);
-      return res.status(200).json({ message: 'Bazi data updated.', bazi: baziData });
+    const baziResult = baziConverter.getBaziJson();
+    console.log('BaziResult:', baziResult);
+
+    const baziData = {
+      user_id: userId,
+      birth_year: birthYear,
+      birth_month: birthMonth,
+      birth_day: birthDay,
+      birth_time: birthTime,
+      bazi_year: baziResult.year,
+      bazi_month: baziResult.month,
+      bazi_day: baziResult.day,
+      bazi_time: baziResult.time,
+      element: baziResult.element,
+      element_color: baziResult.element_color,
+      brief: baziResult.brief,
+      symbol_year: baziResult.symbol_year,
+      symbol_month: baziResult.symbol_month,
+      symbol_day: baziResult.symbol_day,
+      symbol_time: baziResult.symbol_time,
+    };
+
+    if (save) {
+      const existingBaziData = await db('users_bazi_data').where({ user_id: userId }).first();
+      if (existingBaziData) {
+        await db('users_bazi_data').where({ user_id: userId }).update(baziData);
+        return res.status(200).json({ message: 'Bazi data updated.', bazi: baziData });
+      } else {
+        const [baziDataId] = await db('users_bazi_data').insert(baziData);
+        const newBaziData = await db('users_bazi_data').where({ id: baziDataId }).first();
+        return res.status(201).json({ message: 'Bazi data saved.', bazi: newBaziData });
+      }
     } else {
-      // 如果没有记录，插入新记录
-      const [baziDataId] = await db('users_bazi_data').insert(baziData);
-      const newBaziData = await db('users_bazi_data').where({ id: baziDataId }).first();
-      return res.status(201).json({ message: 'Bazi data saved.', bazi: newBaziData });
+      
+      return res.status(200).json({ message: 'Bazi data generated.', bazi: baziData });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Unable to generate and store bazi data.', error });
+    console.error('Error in Bazi generation:', error);
+    res.status(500).json({ message: 'Unable to generate and store Bazi data.', error: error.message });
   }
 };
+
+console.log(generateBazi);
 
 const getUserBazi = async (req, res) => {
   const { userId } = req.params;

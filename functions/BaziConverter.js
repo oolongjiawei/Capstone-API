@@ -171,14 +171,23 @@ export default class BaziConverter {
  const jiaziName = `${$tiangang[this.convertToTianGangNumber(baziDate.HYear)]}${$dizi[this.convertToDiziNumber(baziDate.EYear)]}`;
  const matchedJiazi = sixtyJiaziData.find(jiazi => jiazi.name === jiaziName);
 
+ const baziEnglishYear = this.getBaziEnglishMapping(baziChineseYear);
+ const baziEnglishMonth = this.getBaziEnglishMapping(baziChineseMonth);
+ const baziEnglishDay = this.getBaziEnglishMapping(baziChineseDay);
+ const baziEnglishTime = this.getBaziEnglishMapping(baziChineseTime);
+
  return {
-   year: baziChineseYear,
-   month: baziChineseMonth,
-   day: baziChineseDay,
-   time: baziChineseTime,
-   element: matchedJiazi ? matchedJiazi.element : null,
-   element_color: matchedJiazi ? matchedJiazi.element_color : null,
-   brief: matchedJiazi ? matchedJiazi.brief : null,
+    year: baziChineseYear,
+    month: baziChineseMonth,
+    day: baziChineseDay,
+    time: baziChineseTime,
+    element: matchedJiazi ? matchedJiazi.element : null,
+    element_color: matchedJiazi ? matchedJiazi.element_color : null,
+    brief: matchedJiazi ? matchedJiazi.brief : null,
+    symbol_year: `${baziEnglishYear.element} ${baziEnglishYear.animal_mnemonic}`,
+    symbol_month: `${baziEnglishMonth.element} ${baziEnglishMonth.animal_mnemonic}`,
+    symbol_day: `${baziEnglishDay.element} ${baziEnglishDay.animal_mnemonic}`,
+    symbol_time: `${baziEnglishTime.element} ${baziEnglishTime.animal_mnemonic}`,
  };
   }
 
