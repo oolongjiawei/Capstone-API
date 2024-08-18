@@ -78,7 +78,10 @@ const loginUser = async (req, res) => {
     );
 
     // Return temporary JWT access token to client side
-    res.json({ token });
+    res.json({ 
+      token,
+      userId: user.id
+    });
   } catch (error) {
     res.status(400).json({ message: 'Error logging in' });
   }
