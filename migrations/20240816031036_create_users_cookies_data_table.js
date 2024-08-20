@@ -8,6 +8,7 @@ export function up(knex) {
     return knex.schema.createTable('users_cookies_data', (table) => {
         table.increments('id').primary(); 
         table.integer('user_id').unsigned().notNullable().references('id').inTable('users').onDelete('CASCADE');
+        table.integer('cookie_id').unsigned().notNullable().references('id').inTable('fortune_cookies').onDelete('CASCADE'); // connect to the fortune_cookies table
         table.string('cookie_message').notNullable(); // save Fortune Cookies
         table.timestamp('created_at').defaultTo(knex.fn.now()); 
         table.timestamp('updated_at').defaultTo(knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')); 

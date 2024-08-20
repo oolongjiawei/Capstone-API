@@ -1,38 +1,71 @@
 import knex from 'knex';
 import knexConfig from '../knexfile.js';
 import BaziConverter from '../functions/BaziConverter.js';
-
 const db = knex(knexConfig.development);
 
 const outputFortuneCookie = async (req, res) => {
-  const { save, userId } = req.body;
+  const { save, userId, cookieId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ message: 'User ID is required.' });
+  }
 
   try {
-      const fortuneCookies = await db('fortune_cookies').select('message');
+    let fortune;
+    if (!cookieId) { 
+      const fortuneCookies = await db('fortune_cookies').select('id', 'message');
       const randomIndex = Math.floor(Math.random() * fortuneCookies.length);
-      const fortune = fortuneCookies[randomIndex];
+      fortune = fortuneCookies[randomIndex];
+    } else {
+      fortune = await db('fortune_cookies').where({ id: cookieId }).first();
+    }
 
-      if (save && userId) {
-          const cookieData = {
-              user_id: userId,
-              cookie_message: fortune.message,
-          };
-          await db('users_cookies_data').insert(cookieData);
-      }
+    if (save) {
+      const cookieData = {
+        user_id: userId,
+        cookie_id: fortune.id,
+        cookie_message: fortune.message,
+      };
+      await db('users_cookies_data').insert(cookieData);
+    }
 
-      res.json({ fortune: fortune.message });
+    res.json({ id: fortune.id, fortune: fortune.message });
   } catch (error) {
-      res.status(500).json({ message: 'Error retrieving or saving fortune cookie' });
+    console.error('Error generating or saving fortune cookie:', error);
+    res.status(500).json({ message: 'Error retrieving or saving fortune cookie' });
   }
 };
 
-const getUserFortuneCookies = async (req, res) => {
+
+
+const getDailyFortuneCookie = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const today = new Date().toISOString().split('T')[0]; 
+    const dailyCookie = await db('users_cookies_data')
+      .where({ user_id: userId })
+      .andWhereRaw('DATE(created_at) = ?', [today])
+      .first();
+
+    if (!dailyCookie) {
+      return res.status(404).json({ message: 'No fortune cookie found for today.' });
+    }
+
+    res.json({ id: dailyCookie.cookie_id, fortune: dailyCookie.cookie_message });
+  } catch (error) {
+    console.error('Error retrieving daily fortune cookie for user:', error); 
+    res.status(500).json({ message: 'Error retrieving daily fortune cookie for this user' });
+  }
+};
+
+const getUserSavedCookies = async (req, res) => {
   const { userId } = req.params;
 
   try {
     const userFortuneCookies = await db('users_cookies_data')
       .where({ user_id: userId })
-      .select('cookie_message', 'created_at'); 
+      .select('cookie_id', 'cookie_message', 'created_at');  // Ensure 'cookie_id' is selected
 
     if (userFortuneCookies.length === 0) {
       return res.status(404).json({ message: 'No fortune cookies found for this user' });
@@ -46,7 +79,6 @@ const getUserFortuneCookies = async (req, res) => {
 };
 
 
-
 const getAllFortuneCookies = async (req, res) => {
   try {
       const allFortuneCookies = await db('fortune_cookies').select('*');
@@ -56,63 +88,10 @@ const getAllFortuneCookies = async (req, res) => {
   }
 };
 
-
-// const generateBazi = async (req, res) => {
-//   const { userId, birthYear, birthMonth, birthDay, birthTime } = req.body;
-
-//   // Basic input validation
-//   if (!userId || !birthYear || !birthMonth || !birthDay || birthTime === undefined) {
-//     return res.status(400).json({ message: 'Invalid input parameters.' });
-//   }
-
-//   try {
-//     // Initialize BaziConverter and generate Bazi data
-//     const baziConverter = new BaziConverter(birthYear, birthMonth, birthDay, birthTime);
-//     const baziResult = baziConverter.getBaziJson();
-
-//     const baziData = {
-//       user_id: userId,
-//       birth_year: birthYear,
-//       birth_month: birthMonth,
-//       birth_day: birthDay,
-//       birth_time: birthTime,
-//       bazi_year: baziResult.year,
-//       bazi_month: baziResult.month,
-//       bazi_day: baziResult.day,
-//       bazi_time: baziResult.time,
-//       symbol_year: baziResult.symbol_year,  
-//       symbol_month: baziResult.symbol_month,
-//       symbol_day: baziResult.symbol_day,
-//       symbol_time: baziResult.symbol_time,
-//       element: baziResult.element,
-//       element_color: baziResult.element_color,
-//       brief: baziResult.brief,
-//     };
-
-//     // Check if Bazi data already exists for the user
-//     const existingBaziData = await db('users_bazi_data').where({ user_id: userId }).first();
-
-//     if (existingBaziData) {
-//       // Update existing record
-//       await db('users_bazi_data').where({ user_id: userId }).update(baziData);
-//       return res.status(200).json({ message: 'Bazi data updated.', bazi: baziData });
-//     } else {
-//       // Insert new record
-//       const [baziDataId] = await db('users_bazi_data').insert(baziData);
-//       const newBaziData = await db('users_bazi_data').where({ id: baziDataId }).first();
-//       return res.status(201).json({ message: 'Bazi data saved.', bazi: newBaziData });
-//     }
-    
-//   } catch (error) {
-//     console.error('Error generating Bazi:', error); // Log the error
-//     res.status(500).json({ message: 'Unable to generate and store Bazi data.', error: error.message });
-//   }
-// };
 const generateBazi = async (req, res) => {
-  // const { userId, birthYear, birthMonth, birthDay, birthTime, save } = req.body;
+
   let { userId, birthYear, birthMonth, birthDay, birthTime, save } = req.body;
   
-
   birthYear = parseInt(birthYear);
   birthMonth = parseInt(birthMonth);
   birthDay = parseInt(birthDay);
@@ -186,10 +165,32 @@ const getUserBazi = async (req, res) => {
   }
 };
 
+const deleteUserFortuneCookie = async (req, res) => {
+  const { userId, cookieId } = req.params;
+
+  try {
+    const deletedRows = await db('users_cookies_data')
+      .where({ user_id: userId, cookie_id: cookieId })
+      .del();
+
+    if (deletedRows === 0) {
+      return res.status(404).json({ message: 'Fortune cookie not found or already deleted.' });
+    }
+
+    res.json({ message: 'Fortune cookie deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting fortune cookie:', error);
+    res.status(500).json({ message: 'Error deleting fortune cookie.' });
+  }
+};
+
+
 export {
     outputFortuneCookie,
-    getUserFortuneCookies,
+    getUserSavedCookies,
     getAllFortuneCookies,
     generateBazi,
     getUserBazi,
+    getDailyFortuneCookie,
+    deleteUserFortuneCookie,
 };
