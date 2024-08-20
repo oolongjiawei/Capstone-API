@@ -1,6 +1,6 @@
 # Fortune House-API
 ## Description
- The app connects to an Express backend via a RESTful API, enabling dynamic data retrieval and management.
+ Unlock Your Destiny Through the Four Pillars of Destiny. The app connects to an Express backend via a RESTful API, enabling dynamic data retrieval and management.
 ## Tech Stack
 - **Express**: Web framework for Node.js, used to build RESTful APIs and web applications.
 - **Knex**: A SQL query builder for Node.js.
