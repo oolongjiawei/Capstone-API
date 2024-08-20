@@ -6,7 +6,7 @@
 - **Knex**: A SQL query builder for Node.js.
 - **MySQL2**: A MySQL client for Node.js.
 
-Explore the Web Application at [Fortune House](https://github.com/oolongjiawei/Capstone.
+Explore the Web Application at [Fortune House](https://github.com/oolongjiawei/Capstone).
 ## Installation
 1. In the terminal run: `npm install`
 2. Create a database named `fortune_house` on your local database server.
