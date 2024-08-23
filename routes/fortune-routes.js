@@ -11,6 +11,8 @@ fortuneRouter
   .get('/user/:userId/bazi', fortuneController.getUserBazi)
   .get('/user/:userId/daily-cookie', fortuneController.getDailyFortuneCookie)
   .delete('/user/:userId/cookies/:cookieId', fortuneController.deleteUserFortuneCookie);
+
+  
   
 
 export default fortuneRouter;
